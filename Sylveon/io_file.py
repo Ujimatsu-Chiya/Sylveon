@@ -7,21 +7,22 @@ import zipfile
 class IOFile:
     running_cmd = None
 
-    def __init__(self, path_dir: str = "", prefix: str = "", id: int = None, **kwargs):
+    def __init__(self, path_dir: str = "", prefix: str = "", id: int = None,
+                 *, in_extension: str = ".in", out_extension: str = ".out",
+                 disable_output: bool = False):
         """
         Initialize an IOFile instance.
 
         Parameters:
             - `prefix` (str): Prefix for the file names.
             - `id` (int): ID for the file names.
-            - `**kwargs`: Additional arguments, such as 'extension' and 'disable_output'.
+            - `in_extension` (str): Extension for input files.
+            - `out_extension` (str): Extension for output files.
+            - `disable_output` (bool): Whether to skip opening the output file.
         """
-        input_extension = kwargs.get("in_extension", ".in")
-        output_extension = kwargs.get("out_extension", ".out")
         id = "" if id is None else str(id)
-        self.input_file_name = os.path.join(path_dir, "{}{}{}".format(prefix, id, input_extension))
-        self.output_file_name = os.path.join(path_dir, "{}{}{}".format(prefix, id, output_extension))
-        disable_output = kwargs.get("disable_output", False)
+        self.input_file_name = os.path.join(path_dir, "{}{}{}".format(prefix, id, in_extension))
+        self.output_file_name = os.path.join(path_dir, "{}{}{}".format(prefix, id, out_extension))
         if IOFile.running_cmd is None:
             disable_output = True
         self.input_file = open(self.input_file_name, 'w+')
@@ -36,56 +37,55 @@ class IOFile:
         if self.output_file:
             self.output_file.close()
 
-    def __input_write_aux(self, *args, **kwargs):
+    def __input_write_aux(self, *args, separator=" "):
         """
         Helper function for writing to the input file.
 
         Parameters:
             - `*args`: Variable number of arguments to write.
-            - `**kwargs`: Additional keyword arguments, such as 'separator'.
+            - `separator` (str): Separator between values.
         """
-        separator = kwargs.get("separator", " ")
         for arg in args:
             if isinstance(arg, (list, tuple)):
-                self.__input_write_aux(*arg, **kwargs)
+                self.__input_write_aux(*arg, separator=separator)
             else:
                 if not self.__input_is_first_symbol:
                     self.input_file.write(str(separator))
                 self.input_file.write(str(arg))
                 self.__input_is_first_symbol = False
 
-    def __input_write(self, *args, **kwargs):
+    def __input_write(self, *args, separator=" "):
         """
         Write to the input file.
 
         Parameters:
             - `*args`: Variable number of arguments to write.
-            - `**kwargs`: Additional keyword arguments, such as 'separator'.
+            - `separator` (str): Separator between values.
         """
-        self.__input_write_aux(*args, **kwargs)
+        self.__input_write_aux(*args, separator=separator)
         self.__input_is_first_symbol = True
         self.input_file.write('\n')
 
-    def input_writeln(self, *args, **kwargs):
+    def input_writeln(self, *args, separator=" "):
         """
         Write a line to the input file.
 
         Parameters:
             - `*args`: Variable number of arguments to write.
-            - `**kwargs`: Additional keyword arguments, such as 'separator'.
+            - `separator` (str): Separator between values.
         """
-        self.__input_write(*args, **kwargs)
+        self.__input_write(*args, separator=separator)
 
-    def input_write_mat(self, matrix, **kwargs):
+    def input_write_mat(self, matrix, separator=" "):
         """
         Write a matrix to the input file.
 
         Parameters:
             - `matrix`: 2D matrix to write.
-            - `**kwargs`: Additional keyword arguments, such as 'separator'.
+            - `separator` (str): Separator between values.
         """
         for array in matrix:
-            self.__input_write(*array, **kwargs)
+            self.__input_write(*array, separator=separator)
 
     @staticmethod
     def __try_to_compile_cpp(std_file_path, *args):
@@ -170,8 +170,12 @@ class IOFile:
             result.append(self.output_file_name)
         return result
 
+    def display_output(self):
+        with open(self.output_file_name, 'r') as fp:
+            s = fp.read()
+        return s
 
 def zip_data(output_zip: str, files_to_zip: list):
     with zipfile.ZipFile(output_zip, 'w') as zipf:
         for file in files_to_zip:
-            zipf.write(file)
+            zipf.write(file, arcname=os.path.basename(file))

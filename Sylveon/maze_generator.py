@@ -165,7 +165,9 @@ class MazeGen:
         return maze
 
     @staticmethod
-    def __maze_gen_aux(n, m, maze_gen_func, **kwargs):
+    def __maze_gen_aux(n, m, maze_gen_func, *, block_to_empty_rate=0, empty_to_block_rate=0,
+                       start_pos=None, end_pos=None, empty="0", block="1",
+                       start_mark=None, end_mark=None, shuffle_dir=True):
         """
         Auxiliary function for generating a maze with additional features.
 
@@ -173,29 +175,18 @@ class MazeGen:
             - `n` (int): Number of rows in the maze.
             - `m` (int): Number of columns in the maze.
             - `maze_gen_func`: The core maze generation function.
-            - `**kwargs`: Additional keyword arguments.
-                - `block_to_empty_rate` (float): Probability to convert a block to an empty cell.
-                - `empty_to_block_rate` (float): Probability to convert an empty cell to a block.
-                - `start_pos` (tuple): Starting position in the maze.
-                - `end_pos` (tuple): Ending position in the maze.
-                - `empty` (str): Representation of an empty cell in the maze.
-                - `block` (str): Representation of a block cell in the maze.
-                - `start_mark` (str): Representation of the starting position.
-                - `end_mark` (str): Representation of the ending position.
-                - `shuffle_dir` (bool): Whether to shuffle the direction order (default is True).
+            - Maze output options such as `block_to_empty_rate`, `start_pos`, `end_pos`, and `shuffle_dir`.
 
         Returns:
             - str: The generated maze represented as a string.
         """
-        block_to_empty_rate = kwargs.get("block_to_empty_rate", 0)
-        empty_to_block_rate = kwargs.get("empty_to_block_rate", 0)
-        start_pos = kwargs.get("start_pos", None)
-        end_pos = kwargs.get("end_pos", None)
-        empty = kwargs.get("empty", "0")
-        block = kwargs.get("block", "1")
-        start_mark = kwargs.get("start_mark", empty)
-        end_mark = kwargs.get("end_mark", empty)
-        maze = maze_gen_func(n, m)
+        if n <= 0 or m <= 0:
+            raise ValueError("Maze dimensions must be positive: ({}, {})".format(n, m))
+        if start_mark is None:
+            start_mark = empty
+        if end_mark is None:
+            end_mark = empty
+        maze = maze_gen_func(n, m, shuffle_dir=shuffle_dir)
         if start_pos is not None:
             maze[start_pos[0]][start_pos[1]] = start_mark
         if end_pos is not None:
@@ -228,61 +219,89 @@ class MazeGen:
         return "\n".join("".join(ch for ch in raw) for raw in maze)
 
     @staticmethod
-    def gen_recursive_backtracking_maze(n, m, **kwargs):
+    def gen_recursive_backtracking_maze(n, m, *, block_to_empty_rate=0, empty_to_block_rate=0,
+                                        start_pos=None, end_pos=None, empty="0", block="1",
+                                        start_mark=None, end_mark=None, shuffle_dir=True):
         """
         Generate a maze using the Recursive Backtracking algorithm with additional features.
 
         Parameters:
             - `n` (int): Number of rows in the maze.
             - `m` (int): Number of columns in the maze.
-            - `**kwargs`: Additional keyword arguments.
+            - Maze output options such as `block_to_empty_rate`, `start_pos`, `end_pos`, and `shuffle_dir`.
 
         Returns:
             - str: The generated maze represented as a string.
         """
-        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_recursive_backtracking_core, **kwargs)
+        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_recursive_backtracking_core,
+                                      block_to_empty_rate=block_to_empty_rate,
+                                      empty_to_block_rate=empty_to_block_rate,
+                                      start_pos=start_pos, end_pos=end_pos, empty=empty,
+                                      block=block, start_mark=start_mark,
+                                      end_mark=end_mark, shuffle_dir=shuffle_dir)
 
     @staticmethod
-    def gen_recursive_division_maze(n, m, **kwargs):
+    def gen_recursive_division_maze(n, m, *, block_to_empty_rate=0, empty_to_block_rate=0,
+                                    start_pos=None, end_pos=None, empty="0", block="1",
+                                    start_mark=None, end_mark=None, shuffle_dir=True):
         """
         Generate a maze using the Recursive Division algorithm with additional features.
 
         Parameters:
             - `n` (int): Number of rows in the maze.
             - `m` (int): Number of columns in the maze.
-            - `**kwargs`: Additional keyword arguments.
+            - Maze output options such as `block_to_empty_rate`, `start_pos`, `end_pos`, and `shuffle_dir`.
 
         Returns:
             - str: The generated maze represented as a string.
         """
-        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_recursive_division_core, **kwargs)
+        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_recursive_division_core,
+                                      block_to_empty_rate=block_to_empty_rate,
+                                      empty_to_block_rate=empty_to_block_rate,
+                                      start_pos=start_pos, end_pos=end_pos, empty=empty,
+                                      block=block, start_mark=start_mark,
+                                      end_mark=end_mark, shuffle_dir=shuffle_dir)
 
     @staticmethod
-    def gen_prim_maze(n, m, **kwargs):
+    def gen_prim_maze(n, m, *, block_to_empty_rate=0, empty_to_block_rate=0,
+                      start_pos=None, end_pos=None, empty="0", block="1",
+                      start_mark=None, end_mark=None, shuffle_dir=True):
         """
         Generate a maze using the Prim's algorithm with additional features.
 
         Parameters:
             - `n` (int): Number of rows in the maze.
             - `m` (int): Number of columns in the maze.
-            - `**kwargs`: Additional keyword arguments.
+            - Maze output options such as `block_to_empty_rate`, `start_pos`, `end_pos`, and `shuffle_dir`.
 
         Returns:
             - str: The generated maze represented as a string.
         """
-        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_prim_core, **kwargs)
+        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_prim_core,
+                                      block_to_empty_rate=block_to_empty_rate,
+                                      empty_to_block_rate=empty_to_block_rate,
+                                      start_pos=start_pos, end_pos=end_pos, empty=empty,
+                                      block=block, start_mark=start_mark,
+                                      end_mark=end_mark, shuffle_dir=shuffle_dir)
 
     @staticmethod
-    def gen_kruskal_maze(n, m, **kwargs):
+    def gen_kruskal_maze(n, m, *, block_to_empty_rate=0, empty_to_block_rate=0,
+                         start_pos=None, end_pos=None, empty="0", block="1",
+                         start_mark=None, end_mark=None, shuffle_dir=True):
         """
         Generate a maze using the Kruskal's algorithm with additional features.
 
         Parameters:
             - `n` (int): Number of rows in the maze.
             - `m` (int): Number of columns in the maze.
-            - `**kwargs`: Additional keyword arguments.
+            - Maze output options such as `block_to_empty_rate`, `start_pos`, `end_pos`, and `shuffle_dir`.
 
         Returns:
             - str: The generated maze represented as a string.
         """
-        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_kruskal_core, **kwargs)
+        return MazeGen.__maze_gen_aux(n, m, MazeGen.__gen_kruskal_core,
+                                      block_to_empty_rate=block_to_empty_rate,
+                                      empty_to_block_rate=empty_to_block_rate,
+                                      start_pos=start_pos, end_pos=end_pos, empty=empty,
+                                      block=block, start_mark=start_mark,
+                                      end_mark=end_mark, shuffle_dir=shuffle_dir)

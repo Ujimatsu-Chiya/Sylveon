@@ -95,7 +95,7 @@ class ArrayGen:
         """
         if r is None:
             l, r = 0, l
-        if m > r - l + 1:
+        if m < 0 or m > r - l + 1:
             raise ValueError("Sample size is larger than the population or is negative")
         n = r - l + 1
         st = set()
@@ -108,3 +108,12 @@ class ArrayGen:
         a = list(st)
         random.shuffle(a)
         return a
+
+    @staticmethod
+    def partition(m: int, n: int):
+        if m <= 0:
+            raise ValueError("The number of parts must be positive: {}".format(m))
+        if n < m:
+            raise ValueError("Cannot split {} into {} positive parts".format(n, m))
+        a = [0] + sorted(ArrayGen.universe_sample(m - 1, 1, n - 1)) + [n]
+        return [a[i + 1] - a[i] for i in range(m)]
